@@ -1,0 +1,7 @@
+pyside6==6.7.0
+pandas
+numpy>=2
+scikit-learn
+matplotlib
+openpyxl
+pillow
