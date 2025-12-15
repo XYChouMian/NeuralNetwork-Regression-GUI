@@ -99,8 +99,6 @@ class MainWindow(QMainWindow):
         # 连接预测信号到对应的方法
         self.prediction_tab.manual_predict_signal.connect(self.manual_predict)
         self.prediction_tab.file_predict_signal.connect(self.file_predict)
-        # 连接导出结果信号
-        self.prediction_tab.export_results_signal.connect(self.export_results)
 
         # 将选项卡添加到主布局
         self.main_layout.addWidget(self.tab_widget)
@@ -213,15 +211,7 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "标准化失败", message)
             return False
 
-        # 添加总标题
-        variables = "Input " + ", ".join(self.data_processor.input_columns) + \
-            ", Output " + ", ".join(self.data_processor.output_columns)
-        plt.suptitle(variables, fontsize=16)
 
-        # 调整布局
-        plt.tight_layout(rect=[0, 0, 1, 0.96])
-
-        return fig
 
     def train_model(self):
         """训练模型"""
@@ -270,33 +260,8 @@ class MainWindow(QMainWindow):
 
         # 训练模型
         try:
-            # 生成包含输入输出列信息的文件名
-            if hasattr(self, 'data_processor') and self.data_processor.input_columns:
-                # 使用已经排序好的输入变量名
-                input_columns_str = "_".join(self.data_processor.input_columns)
-            else:
-                input_columns_str = "unknown_input"
-
-            if hasattr(self, 'data_processor') and self.data_processor.output_columns:
-                # 使用已经排序好的输出变量名
-                output_columns_str = "_".join(
-                    self.data_processor.output_columns)
-            else:
-                output_columns_str = "unknown_output"
-
-            # 获取隐藏层数量
-            # layer_sizes包含输入层、隐藏层和输出层
-            hidden_layers_count = len(layer_sizes) - 2
-
-            # 创建visualizations目录（如果不存在）
-            visualization_dir = "NN_models"
-            if not os.path.exists(visualization_dir):
-                os.makedirs(visualization_dir)
-
-            # 构建完整的保存路径，使用与模型保存相同的命名规则
-            visualization_name = f"evaluation_{input_columns_str}__{output_columns_str}__{hidden_layers_count}hidden_layers.png"
-            visualization_save_path = os.path.join(
-                visualization_dir, visualization_name)
+            # 构建可视化保存路径
+            visualization_save_path = self.generate_visualization_save_path(layer_sizes)
 
             # 获取选择的优化算法
             solver = self.training_tab.solver_combo.currentText()
@@ -363,6 +328,62 @@ class MainWindow(QMainWindow):
 
         return success
 
+    def generate_visualization_save_path(self, layer_sizes):
+        """生成可视化文件的保存路径"""
+        # 生成包含输入输出列信息的文件名
+        if hasattr(self, 'data_processor') and self.data_processor.input_columns:
+            # 使用已经排序好的输入变量名
+            input_columns_str = "_".join(self.data_processor.input_columns)
+        else:
+            input_columns_str = "unknown_input"
+
+        if hasattr(self, 'data_processor') and self.data_processor.output_columns:
+            # 使用已经排序好的输出变量名
+            output_columns_str = "_".join(
+                self.data_processor.output_columns)
+        else:
+            output_columns_str = "unknown_output"
+
+        # 获取隐藏层数量
+        # layer_sizes包含输入层、隐藏层和输出层
+        hidden_layers_count = len(layer_sizes) - 2
+
+        # 创建visualizations目录（如果不存在）
+        visualization_dir = "NN_models"
+        if not os.path.exists(visualization_dir):
+            os.makedirs(visualization_dir)
+
+        # 构建完整的保存路径
+        visualization_name = f"evaluation_{input_columns_str}__{output_columns_str}__{hidden_layers_count}hidden_layers.png"
+        visualization_save_path = os.path.join(
+            visualization_dir, visualization_name)
+        
+        return visualization_save_path
+    
+    def generate_model_save_path(self):
+        """生成模型文件的保存路径"""
+        # 生成包含输入输出列信息的文件名
+        if hasattr(self, 'data_processor') and self.data_processor.input_columns:
+            # 使用已经排序好的输入特征
+            input_columns_str = "_".join(self.data_processor.input_columns)
+        else:
+            input_columns_str = "unknown_input"
+
+        if hasattr(self, 'data_processor') and self.data_processor.output_columns:
+            # 使用已经排序好的输出特征
+            output_columns_str = "_".join(
+                self.data_processor.output_columns)
+        else:
+            output_columns_str = "unknown_output"
+
+        # 获取隐藏层数量
+        hidden_layers_count = 0
+        if hasattr(self.model_manager, 'layer_sizes') and self.model_manager.layer_sizes:
+            # layer_sizes包含输入层、隐藏层和输出层，所以隐藏层数量是总层数减2
+            hidden_layers_count = len(self.model_manager.layer_sizes) - 2
+            
+        return input_columns_str, output_columns_str, hidden_layers_count
+    
     def save_model(self):
         """保存模型"""
         if self.model_manager is None:
@@ -385,33 +406,12 @@ class MainWindow(QMainWindow):
             if not os.path.exists(model_dir):
                 os.makedirs(model_dir)
 
-            # 生成有意义的文件名
-            import datetime
-            timestamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-
             # 确定模型类型
             model_type = "scikit-learn" if "Sklearn" in self.model_manager.__class__.__name__ else "PyTorch"
             extension = ".pkl" if "Sklearn" in self.model_manager.__class__.__name__ else ".pth"
 
-            # 生成包含输入输出列信息的文件名
-            if hasattr(self, 'data_processor') and self.data_processor.input_columns:
-                # 使用已经排序好的输入特征
-                input_columns_str = "_".join(self.data_processor.input_columns)
-            else:
-                input_columns_str = "unknown_input"
-
-            if hasattr(self, 'data_processor') and self.data_processor.output_columns:
-                # 使用已经排序好的输出特征
-                output_columns_str = "_".join(
-                    self.data_processor.output_columns)
-            else:
-                output_columns_str = "unknown_output"
-
-            # 获取隐藏层数量
-            hidden_layers_count = 0
-            if hasattr(self.model_manager, 'layer_sizes') and self.model_manager.layer_sizes:
-                # layer_sizes包含输入层、隐藏层和输出层，所以隐藏层数量是总层数减2
-                hidden_layers_count = len(self.model_manager.layer_sizes) - 2
+            # 使用提取的方法生成模型保存路径的组成部分
+            input_columns_str, output_columns_str, hidden_layers_count = self.generate_model_save_path()
 
             # 构建符合要求的文件名格式: model_Input__Output__{隐藏层数}hidden_layers
             model_name = f"model_{input_columns_str}__{output_columns_str}__{hidden_layers_count}hidden_layers{extension}"
@@ -963,25 +963,30 @@ class MainWindow(QMainWindow):
         # 设置表格为只读
         table.setEditTriggers(QTableWidget.NoEditTriggers)
 
-        # 连接表格的删除行信号，以便更新完整的DataFrame
-        table.cellChanged.disconnect() if hasattr(table, 'cellChanged') else None
-        table.itemChanged.disconnect() if hasattr(table, 'itemChanged') else None
-
-        # 覆盖表格的delete_selected_rows和delete_selected_columns方法
-        def custom_delete_selected_rows():
-            self.delete_table_rows(table)
-
-        def custom_delete_selected_columns():
-            self.delete_table_columns(table)
-
-        table.delete_selected_rows = custom_delete_selected_rows
-        table.delete_selected_columns = custom_delete_selected_columns
-
-        # 连接右键菜单信号
-        table.customContextMenuRequested.disconnect() if hasattr(
-            table, 'customContextMenuRequested') else None
+        # 连接信号
+        try:
+            table.customContextMenuRequested.disconnect()
+        except (RuntimeError, AttributeError):
+            pass
         table.customContextMenuRequested.connect(
             lambda pos: self.show_table_context_menu(table, pos))
+        
+        # 连接行和列删除信号
+        try:
+            # 移除旧的连接（如果存在）
+            table.rows_deleted.disconnect()
+        except (RuntimeError, AttributeError):
+            pass
+        try:
+            table.columns_deleted.disconnect()
+        except (RuntimeError, AttributeError):
+            pass
+        
+        # 连接新的信号
+        if hasattr(table, 'rows_deleted'):
+            table.rows_deleted.connect(self.handle_table_rows_deleted)
+        if hasattr(table, 'columns_deleted'):
+            table.columns_deleted.connect(self.handle_table_columns_deleted)
 
     def show_table_context_menu(self, table, position):
         """显示表格上下文菜单"""
@@ -1175,59 +1180,22 @@ class MainWindow(QMainWindow):
         table.resizeColumnsToContents()
 
     def eventFilter(self, source, event):
-        """事件过滤器，用于处理表格的复制粘贴操作"""
+        """事件过滤器，用于处理表格的复制操作"""
         if event.type() == QEvent.KeyPress:
-            # 检查是否按下了Ctrl+C（复制）或Ctrl+V（粘贴）
+            # 检查是否按下了Ctrl+C（复制）
             if event.matches(QKeySequence.Copy):
                 if isinstance(source, QTableWidget):
                     self.copy_table_content(source)
                     return True
-            elif event.matches(QKeySequence.Paste):
-                if isinstance(source, QTableWidget):
-                    self.paste_table_content(source)
-                    return True
-            elif event.matches(QKeySequence.Delete):
-                if isinstance(source, QTableWidget):
-                    self.delete_selected_rows(source)
-                    return True
         return super().eventFilter(source, event)
 
-    def export_results(self):
-        """导出结果"""
-        if not hasattr(self, 'pred_df'):
-            QMessageBox.warning(self, "错误", "没有可导出的结果")
-            return
-
-        # 设置默认导出路径为当前Python文件所在的目录
-        current_dir = os.path.dirname(os.path.abspath(__file__))
-        default_file_path = os.path.join(current_dir, "output.xlsx")
-
-        # 打开文件保存对话框
-        file_path, _ = QFileDialog.getSaveFileName(
-            self,
-            "导出结果",
-            default_file_path,
-            "Excel Files (*.xlsx *.xls);;CSV Files (*.csv);;All Files (*)"
-        )
-
-        if file_path:
-            try:
-                # 如果用户没有指定扩展名，默认添加.xlsx
-                if not (file_path.endswith('.csv') or file_path.endswith('.xlsx') or file_path.endswith('.xls')):
-                    file_path += '.xlsx'
-
-                # 根据文件扩展名选择导出格式
-                if file_path.endswith('.xlsx') or file_path.endswith('.xls'):
-                    # 使用pandas导出到Excel
-                    self.pred_df.to_excel(file_path, index=False)
-                elif file_path.endswith('.csv'):
-                    self.pred_df.to_csv(
-                        file_path, index=False, encoding='utf-8-sig')
-
-                QMessageBox.information(
-                    self, "导出成功", f"数据已成功导出到:\n{file_path}")
-            except Exception as e:
-                QMessageBox.critical(self, "导出错误", f"导出文件时出错:\n{str(e)}")
+    def handle_table_rows_deleted(self, rows):
+        """处理表格行删除事件，更新完整的DataFrame"""
+        self.delete_table_rows(self.prediction_tab.file_result_table)
+        
+    def handle_table_columns_deleted(self, columns):
+        """处理表格列删除事件，更新完整的DataFrame"""
+        self.delete_table_columns(self.prediction_tab.file_result_table)
 
 
 # 主程序入口

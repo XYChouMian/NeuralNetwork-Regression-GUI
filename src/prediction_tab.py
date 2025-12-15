@@ -85,8 +85,7 @@ class PredictionTab(QWidget):
         # 确保表格控件获得焦点，以便快捷键正常工作
         self.manual_input_table.setFocusPolicy(Qt.StrongFocus)
         self.manual_input_table.setFocus()
-        # 为表格重新设置快捷键，确保在prediction_tab上下文中正常工作
-        self.setup_table_shortcuts(self.manual_input_table)
+
         # 为表格安装事件过滤器，确保快捷键能被正确处理
         self.manual_input_table.installEventFilter(self)
 
@@ -121,8 +120,7 @@ class PredictionTab(QWidget):
         self.manual_result_table.setAlternatingRowColors(True)  # 交替行颜色
         # 确保表格控件获得焦点，以便快捷键正常工作
         self.manual_result_table.setFocusPolicy(Qt.StrongFocus)
-        # 为表格重新设置快捷键，确保在prediction_tab上下文中正常工作
-        self.setup_table_shortcuts(self.manual_result_table)
+
         # 为表格安装事件过滤器，确保快捷键能被正确处理
         self.manual_result_table.installEventFilter(self)
 
@@ -207,8 +205,7 @@ class PredictionTab(QWidget):
         self.input_columns_table = ExcelLikeTableWidget(1, 2, ["输入参数", "文件列"], self)
         # 确保表格控件获得焦点，以便快捷键正常工作
         self.input_columns_table.setFocusPolicy(Qt.StrongFocus)
-        # 为表格重新设置快捷键，确保在prediction_tab上下文中正常工作
-        self.setup_table_shortcuts(self.input_columns_table)
+
         # 为表格安装事件过滤器，确保快捷键能被正确处理
         self.input_columns_table.installEventFilter(self)
 
@@ -233,8 +230,7 @@ class PredictionTab(QWidget):
             QAbstractItemView.NoEditTriggers)
         # 确保表格控件获得焦点，以便快捷键正常工作
         self.file_result_table.setFocusPolicy(Qt.StrongFocus)
-        # 为表格重新设置快捷键，确保在prediction_tab上下文中正常工作
-        self.setup_table_shortcuts(self.file_result_table)
+
         # 为表格安装事件过滤器，确保快捷键能被正确处理
         self.file_result_table.installEventFilter(self)
 
@@ -379,31 +375,8 @@ class PredictionTab(QWidget):
         except Exception as e:
             QMessageBox.critical(self, "导出错误", f"导出文件时出错:\n{str(e)}")
 
-    def setup_table_shortcuts(self, table):
-        """为表格设置快捷键，实现与Excel一致的操作"""
-        # 注意：Ctrl+C和Ctrl+V快捷键已经在ExcelLikeTableWidget类的keyPressEvent方法中处理
-        # 这里不再重复设置，避免冲突
-        
-        # 根据表格的expand_rows参数来决定是否设置行操作快捷键
-        if hasattr(table, 'expand_rows') and table.expand_rows:
-            table.add_row_shortcut = QShortcut(QKeySequence("Ctrl++"), table)
-            table.add_row_shortcut.activated.connect(table.add_row)
-            
-            table.del_row_shortcut = QShortcut(QKeySequence("Ctrl+-"), table)
-            table.del_row_shortcut.activated.connect(table.delete_selected_rows)
-        
-        # 根据表格的expand_cols参数来决定是否设置列操作快捷键
-        if hasattr(table, 'expand_cols') and table.expand_cols:
-            table.add_col_shortcut = QShortcut(QKeySequence("Ctrl+Shift++"), table)
-            table.add_col_shortcut.activated.connect(table.add_column)
-            
-            table.del_col_shortcut = QShortcut(QKeySequence("Ctrl+Shift+-"), table)
-            table.del_col_shortcut.activated.connect(table.delete_selected_columns)
-    
     def eventFilter(self, obj, event):
-        """事件过滤器，处理表格的快捷键，实现与Excel一致的操作"""
-        # 注意：Ctrl+C和Ctrl+V快捷键已经在ExcelLikeTableWidget类的keyPressEvent方法中处理
-        # 这里不再重复处理，避免冲突
+        """事件过滤器"""
         return super().eventFilter(obj, event)
 
 if __name__ == "__main__":

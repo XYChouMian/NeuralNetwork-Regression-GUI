@@ -73,8 +73,14 @@ class DataProcessor:
             return "未加载数据"
 
         info = f"数据集形状: {self.df.shape}\n"
-        info += f"特征列: {self.df[self.input_columns].describe()}\n" if self.input_columns else ""
-        info += f"目标变量: {self.df[self.output_columns].describe()}\n" if self.output_columns else ""
+        
+        # 检查input_columns是否存在且不为空，并且所有列都在df.columns中
+        if self.input_columns and all(col in self.df.columns for col in self.input_columns):
+            info += f"特征列: {self.df[self.input_columns].describe()}\n"
+        
+        # 检查output_columns是否存在且不为空，并且所有列都在df.columns中
+        if self.output_columns and all(col in self.df.columns for col in self.output_columns):
+            info += f"目标变量: {self.df[self.output_columns].describe()}\n"
 
         return info
 
