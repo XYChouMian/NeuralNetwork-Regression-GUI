@@ -45,6 +45,7 @@ NN_models/
 *.spec
 
 # Don't ignore screenshots folder
+!Screenshots/
 !screenshots/
 
 # Visualization files
@@ -52,6 +53,9 @@ NN_models/
 *.jpg
 *.jpeg
 # Except screenshots
+!Screenshots/*.png
+!Screenshots/*.jpg
+!Screenshots/*.jpeg
 !screenshots/*.png
 !screenshots/*.jpg
 !screenshots/*.jpeg
