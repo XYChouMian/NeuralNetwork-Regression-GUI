@@ -44,7 +44,14 @@ NN_models/
 # PyInstaller build files
 *.spec
 
+# Don't ignore screenshots folder
+!screenshots/
+
 # Visualization files
 *.png
 *.jpg
 *.jpeg
+# Except screenshots
+!screenshots/*.png
+!screenshots/*.jpg
+!screenshots/*.jpeg
