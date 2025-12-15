@@ -30,6 +30,7 @@ NeuralNetwork-Regression-GUI/
 ├── scripts/                 # 辅助脚本
 │   ├── data_sample_generate.py  # 数据样本生成脚本
 │   └── icon_generate.py     # 图标生成脚本
+├── screenshots/             # 应用截图
 ├── src/                     # 主源码目录
 │   ├── data_processor.py    # 数据加载和处理
 │   ├── excel_like_table.py  # Excel风格表格组件
