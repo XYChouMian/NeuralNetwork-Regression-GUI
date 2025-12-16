@@ -1,37 +1,26 @@
-from data_processor import DataProcessor
-from visualization_window import VisualizationWindow
-from start_tab import StartTab
-from training_tab import TrainingTab
-from prediction_tab import PredictionTab
-from styles import StyleManager
-
-# 选择默认使用哪个模型管理器
-# # 移除静态导入，避免PyInstaller打包不必要的PyTorch依赖 as ModelManager
-from model_manager_sklearn import ModelManagerSklearn as ModelManager
-# from model_manager_torch import ModelManagerTorch as ModelManager
-
-
-import matplotlib.pyplot as plt
-import matplotlib
-import pandas as pd
-import numpy as np
-from PySide6.QtCore import Qt, QEvent
-
-# 移除torch相关导入，统一使用神经网络模型接口
+import os
+import sys
+from PySide6.QtGui import QIcon
 from PySide6.QtWidgets import (
     QApplication, QMainWindow, QWidget, QVBoxLayout, QHBoxLayout, QPushButton,
     QLabel, QFileDialog, QListWidget, QListWidgetItem, QGroupBox,
     QSplitter, QStackedWidget, QTextEdit, QMessageBox, QProgressBar, QTabWidget,
     QTableWidget, QTableWidgetItem, QSpinBox, QComboBox
 )
-from PySide6.QtGui import QIcon
-import sys
-import os
+from PySide6.QtCore import Qt, QEvent
+import numpy as np
+import pandas as pd
+from src.data_processor import DataProcessor
+from src.visualization_window import VisualizationWindow
+from src.start_tab import StartTab
+from src.training_tab import TrainingTab
+from src.prediction_tab import PredictionTab
+from src.styles import StyleManager
+from src.model_manager_sklearn import ModelManagerSklearn as ModelManager
 
-# 设置环境变量以确保matplotlib使用PySide6
-os.environ['QT_API'] = 'PySide6'
-
+import matplotlib
 matplotlib.use('Qt5Agg')  # 使用Qt5Agg后端以确保在PySide6中正常显示
+os.environ['QT_API'] = 'PySide6'
 
 
 class MainWindow(QMainWindow):
@@ -42,14 +31,34 @@ class MainWindow(QMainWindow):
 
         # 设置窗口图标
         try:
-            # 构建图标文件路径
-            icon_path = os.path.join("resources", "NeuralNetwork.ico")
-
-            # 检查图标文件是否存在
-            if os.path.exists(icon_path):
-                self.setWindowIcon(QIcon(icon_path))
+            # 构建图标文件路径，处理pyinstaller打包后的情况
+            import sys
+            if getattr(sys, 'frozen', False):
+                # 打包后的exe环境
+                base_path = sys._MEIPASS
             else:
-                print(f"图标文件不存在: {icon_path}")
+                # 开发环境
+                base_path = os.path.dirname(os.path.abspath(__file__))
+            
+            # 尝试多种路径组合，确保能找到图标文件
+            possible_paths = [
+                os.path.join(base_path, "resources", "NeuralNetwork.ico"),
+                os.path.join("resources", "NeuralNetwork.ico"),
+                os.path.join(base_path, "NeuralNetwork.ico"),
+                "NeuralNetwork.ico"
+            ]
+            
+            icon_path = None
+            for path in possible_paths:
+                if os.path.exists(path):
+                    icon_path = path
+                    break
+            
+            if icon_path:
+                self.setWindowIcon(QIcon(icon_path))
+                print(f"成功加载图标: {icon_path}")
+            else:
+                print(f"图标文件不存在，尝试的路径: {possible_paths}")
         except Exception as e:
             # 记录错误但不中断程序
             print(f"设置窗口图标失败: {e}")
@@ -211,8 +220,6 @@ class MainWindow(QMainWindow):
             QMessageBox.warning(self, "标准化失败", message)
             return False
 
-
-
     def train_model(self):
         """训练模型"""
         # 获取参数并按界面显示的小数位数进行四舍五入处理
@@ -261,7 +268,8 @@ class MainWindow(QMainWindow):
         # 训练模型
         try:
             # 构建可视化保存路径
-            visualization_save_path = self.generate_visualization_save_path(layer_sizes)
+            visualization_save_path = self.generate_visualization_save_path(
+                layer_sizes)
 
             # 获取选择的优化算法
             solver = self.training_tab.solver_combo.currentText()
@@ -357,9 +365,9 @@ class MainWindow(QMainWindow):
         visualization_name = f"evaluation_{input_columns_str}__{output_columns_str}__{hidden_layers_count}hidden_layers.png"
         visualization_save_path = os.path.join(
             visualization_dir, visualization_name)
-        
+
         return visualization_save_path
-    
+
     def generate_model_save_path(self):
         """生成模型文件的保存路径"""
         # 生成包含输入输出列信息的文件名
@@ -381,9 +389,9 @@ class MainWindow(QMainWindow):
         if hasattr(self.model_manager, 'layer_sizes') and self.model_manager.layer_sizes:
             # layer_sizes包含输入层、隐藏层和输出层，所以隐藏层数量是总层数减2
             hidden_layers_count = len(self.model_manager.layer_sizes) - 2
-            
+
         return input_columns_str, output_columns_str, hidden_layers_count
-    
+
     def save_model(self):
         """保存模型"""
         if self.model_manager is None:
@@ -970,7 +978,7 @@ class MainWindow(QMainWindow):
             pass
         table.customContextMenuRequested.connect(
             lambda pos: self.show_table_context_menu(table, pos))
-        
+
         # 连接行和列删除信号
         try:
             # 移除旧的连接（如果存在）
@@ -981,7 +989,7 @@ class MainWindow(QMainWindow):
             table.columns_deleted.disconnect()
         except (RuntimeError, AttributeError):
             pass
-        
+
         # 连接新的信号
         if hasattr(table, 'rows_deleted'):
             table.rows_deleted.connect(self.handle_table_rows_deleted)
@@ -1192,7 +1200,7 @@ class MainWindow(QMainWindow):
     def handle_table_rows_deleted(self, rows):
         """处理表格行删除事件，更新完整的DataFrame"""
         self.delete_table_rows(self.prediction_tab.file_result_table)
-        
+
     def handle_table_columns_deleted(self, columns):
         """处理表格列删除事件，更新完整的DataFrame"""
         self.delete_table_columns(self.prediction_tab.file_result_table)

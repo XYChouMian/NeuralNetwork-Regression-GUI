@@ -1,6 +1,6 @@
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QLabel, QHBoxLayout, QPushButton
 from PySide6.QtCore import Qt
-from styles import StyleManager
+from .styles import StyleManager
 
 
 class StartTab(QWidget):

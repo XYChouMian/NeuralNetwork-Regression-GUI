@@ -34,7 +34,6 @@ NeuralNetwork-Regression-GUI/
 ├── src/                     # 主源码目录
 │   ├── data_processor.py    # 数据加载和处理
 │   ├── excel_like_table.py  # Excel风格表格组件
-│   ├── main_window.py       # 主窗口和核心逻辑
 │   ├── model_manager_sklearn.py  # scikit-learn模型管理
 │   ├── prediction_tab.py    # 预测功能标签页
 │   ├── start_tab.py         # 起始界面
@@ -45,7 +44,7 @@ NeuralNetwork-Regression-GUI/
 ├── LICENSE                  # 许可证
 ├── README.md                # 项目说明
 ├── requirements.txt         # 依赖列表
-└── run.py                   # 应用入口
+└── main_window.py           # 主窗口和核心逻辑
 ```
 
 ## 安装和运行
@@ -73,7 +72,7 @@ pip install -r requirements.txt
 #### 方式一：直接运行Python脚本
 
 ```bash
-python run.py
+python main_window.py
 ```
 
 #### 方式二：打包为可执行文件
@@ -87,7 +86,7 @@ python run.py
 
 2. **执行打包命令**：
    ```bash
-   pyinstaller -F -w -i "resources/NeuralNetwork.ico" --add-data "resources/NeuralNetwork.ico:." --name="NeuralNetwork.exe" "run.py"
+   pyinstaller -F -w -i "resources/NeuralNetwork.ico" --add-data "resources/NeuralNetwork.ico:resources/" --name="NeuralNetwork.exe" "main_window.py"
    ```
 
 3. **获取可执行文件**：
@@ -100,7 +99,7 @@ python run.py
 
 ### 训练流程
 
-1. **启动应用**：运行 `run.py` 启动应用程序
+1. **启动应用**：运行 `main_window.py` 启动应用程序
 2. **进入训练界面**：点击 "模型训练" 标签页
 3. **导入数据**：点击 "导入数据" 按钮，选择本地 CSV/XLSX/XLS 文件
 4. **选择列**：在左侧列表中选择输入列和输出列

@@ -4,7 +4,7 @@ from PySide6.QtWidgets import (
     QComboBox, QGridLayout, QDoubleSpinBox, QFormLayout, QScrollArea
 )
 from PySide6.QtCore import Qt
-from styles import StyleManager
+from .styles import StyleManager
 
 
 class TrainingTab(QWidget):

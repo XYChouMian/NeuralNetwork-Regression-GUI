@@ -9,8 +9,8 @@ from PySide6.QtGui import (QAction, QKeySequence, QGuiApplication, QClipboard,
 import pandas as pd
 
 # 导入新创建的表格类
-from excel_like_table import ExcelLikeTableWidget
-from styles import StyleManager
+from .excel_like_table import ExcelLikeTableWidget
+from .styles import StyleManager
 
 
 class PredictionTab(QWidget):
